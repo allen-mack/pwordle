@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// A string flag.
-	wordMap := flag.String("m", "", "Map that uses * for unknown letters")
+	wordMap := flag.String("m", "", "Map that uses '.' for unknown letters")
 	extraLetters := flag.String("e", "", "Extra letters that are in the word, but you don't know their exact location.")
 	excludedLetters := flag.String("x", "", "Letters that should be excluded, because you know they aren't in the word.")
 	version := flag.Bool("v", false, "Display version information")
@@ -23,7 +23,7 @@ func main() {
 	}
 
 	// Get the word map.
-	rx := strings.Replace(*wordMap, "*", ".", -1)
+	rx := strings.ReplaceAll(*wordMap, "*", ".")
 
 	// See if there are any extra letters
 	ex := *extraLetters
@@ -121,7 +121,6 @@ func readList(path string) ([]string, error) {
 
 // regexMatch returns true if the testString matches the regex pattern.
 func regexMatch(pattern string, testString string) bool {
-	fmt.Println(pattern)
 	m, err := regexp.MatchString(pattern, testString)
 	if err != nil {
 		fmt.Println("your regex is faulty")
