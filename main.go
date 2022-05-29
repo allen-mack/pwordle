@@ -12,6 +12,7 @@ import (
 func main() {
 	// A string flag.
 	wordMap := flag.String("m", "", "Map that uses '.' for unknown letters")
+	antiPattern := flag.String("a", "", "Comma seperated list of letter groups that don't belong in their relative columns.")
 	extraLetters := flag.String("e", "", "Extra letters that are in the word, but you don't know their exact location.")
 	excludedLetters := flag.String("x", "", "Letters that should be excluded, because you know they aren't in the word.")
 	version := flag.Bool("v", false, "Display version information")
@@ -22,6 +23,12 @@ func main() {
 		return
 	}
 
+	// if *antiPattern != "" {
+	// 	fmt.Println(*antiPattern)
+	// 	fmt.Println(antiPatternMatch(*antiPattern, "allen"))
+	// 	return
+	// }
+
 	// Get the word map.
 	rx := strings.ReplaceAll(*wordMap, "*", ".")
 
@@ -31,16 +38,15 @@ func main() {
 	// See if there are any excluded letters
 	xx := *excludedLetters
 
+	// See if there is an antipattern
+	ap := *antiPattern
+
 	words, err := readList("wordlist.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	results := getMatches(words, rx, ex, xx)
-
-	// for _, word := range results {
-	// 	fmt.Println(word)
-	// }
+	results := getMatches(words, rx, ex, xx, ap)
 
 	colorizeOutput(results, rx, ex)
 }
@@ -72,7 +78,7 @@ func colorizeOutput(results []string, pattern string, extras string) {
 }
 
 // getMatches returns a list of all
-func getMatches(wordList []string, pattern string, extras string, excluded string) []string {
+func getMatches(wordList []string, pattern string, extras string, excluded string, antiPattern string) []string {
 
 	var results []string
 
@@ -87,10 +93,16 @@ func getMatches(wordList []string, pattern string, extras string, excluded strin
 				}
 			}
 
+			// Filter out words that contain excluded letters
 			for _, v := range excluded {
 				if regexMatch(string(v), word) {
 					valid = false
 				}
+			}
+
+			// Filter out words that match the antipattern
+			if antiPatternMatch(antiPattern, word) {
+				valid = false
 			}
 
 			if valid {
@@ -117,6 +129,21 @@ func readList(path string) ([]string, error) {
 	}
 
 	return lines, scanner.Err()
+}
+
+// antiPatternMatch returns true if the word matches the antipattern
+func antiPatternMatch(pattern string, testString string) bool {
+	parts := strings.Split(pattern, ",")
+	for i, p := range parts {
+		for _, option := range p {
+			if string(option) == string(testString[i]) {
+				return true
+			}
+		}
+
+	}
+
+	return false
 }
 
 // regexMatch returns true if the testString matches the regex pattern.
