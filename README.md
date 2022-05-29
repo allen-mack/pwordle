@@ -5,6 +5,8 @@ Wordle puzzle helper
 
 ```
 Usage of pwordle:
+  -a string
+        Comma separated string where each section are letters that don't belong in that column.
   -e string
         Extra letters that are in the word, but you don't know their exact location.
   -m string
